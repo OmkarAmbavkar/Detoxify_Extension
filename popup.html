@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Detoxify</title>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --neon: #00e6e6;
+      --neon-dark: #00b3b3;
+      --magenta: #ff00ff;
+      --bg: #0d0d1a;
+      --card: rgba(20, 20, 45, 0.95);
+      --text: #e0e0e0;
+      --dim: #7a7a9a;
+      --green: #00ff88;
+      --red: #ff4455;
+      --yellow: #ffd700;
+      --glow: 0 0 20px rgba(0,230,230,0.5), 0 0 40px rgba(0,230,230,0.2);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      width: 380px;
+      min-height: 520px;
+      background: var(--bg);
+      font-family: 'Space Mono', monospace;
+      color: var(--text);
+      overflow-x: hidden;
+      position: relative;
+    }
+
+    /* Animated grid background */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(0,230,230,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0,230,230,0.03) 1px, transparent 1px);
+      background-size: 30px 30px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .wrapper {
+      position: relative;
+      z-index: 1;
+      padding: 24px 22px 20px;
+    }
+
+    /* ── Header ── */
+    .header {
+      text-align: center;
+      margin-bottom: 22px;
+      position: relative;
+    }
+    .header::after {
+      content: '';
+      display: block;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--neon), transparent);
+      margin-top: 16px;
+      opacity: 0.5;
+    }
+    .logo-row {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      margin-bottom: 4px;
+    }
+    .logo-icon {
+      font-size: 1.8em;
+      filter: drop-shadow(0 0 8px var(--magenta));
+      animation: spin-idle 8s linear infinite;
+    }
+    @keyframes spin-idle {
+      0%,90%   { transform: rotate(0deg); }
+      95%      { transform: rotate(20deg); }
+      100%     { transform: rotate(0deg); }
+    }
+    h1 {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 1.6em;
+      font-weight: 900;
+      color: var(--neon);
+      letter-spacing: 3px;
+      text-shadow: 0 0 10px var(--neon), 0 0 20px rgba(0,230,230,0.4);
+    }
+    .subtitle {
+      font-size: 0.68em;
+      color: var(--dim);
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      margin-top: 3px;
+    }
+
+    /* ── Status badge ── */
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.65em;
+      padding: 3px 10px;
+      border-radius: 20px;
+      margin-top: 8px;
+      border: 1px solid;
+      transition: all 0.3s;
+    }
+    .badge.connected    { border-color: var(--green); color: var(--green); background: rgba(0,255,136,0.08); }
+    .badge.disconnected { border-color: var(--red);   color: var(--red);   background: rgba(255,68,85,0.08); }
+    .badge-dot {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: currentColor;
+      animation: blink 1.2s infinite;
+    }
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.2} }
+
+    /* ── Inputs ── */
+    .field { margin-bottom: 16px; }
+    label {
+      display: block;
+      font-size: 0.7em;
+      font-weight: 700;
+      color: var(--neon);
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      margin-bottom: 7px;
+    }
+    label .num {
+      color: var(--magenta);
+      margin-right: 4px;
+    }
+    input[type="text"],
+    input[type="number"],
+    select {
+      width: 100%;
+      padding: 11px 14px;
+      background: rgba(0,0,0,0.4);
+      border: 1px solid rgba(0,230,230,0.2);
+      border-radius: 6px;
+      color: var(--text);
+      font-family: 'Space Mono', monospace;
+      font-size: 0.85em;
+      transition: all 0.3s;
+      outline: none;
+    }
+    input:focus, select:focus {
+      border-color: var(--neon);
+      box-shadow: 0 0 12px rgba(0,230,230,0.3), inset 0 0 8px rgba(0,230,230,0.05);
+      background: rgba(0,0,0,0.6);
+    }
+    .row-inputs {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .row-inputs input {
+      width: 90px;
+      flex-shrink: 0;
+    }
+    .input-hint {
+      font-size: 0.72em;
+      color: var(--dim);
+    }
+    .field-meta {
+      font-size: 0.68em;
+      color: var(--neon);
+      margin-top: 6px;
+      opacity: 0.7;
+      letter-spacing: 0.5px;
+    }
+
+    /* ── Progress bar ── */
+    .progress-wrap {
+      margin-bottom: 16px;
+      display: none;
+    }
+    .progress-wrap.visible { display: block; }
+    .progress-label {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.65em;
+      color: var(--dim);
+      margin-bottom: 6px;
+    }
+    .progress-track {
+      height: 6px;
+      background: rgba(0,230,230,0.1);
+      border-radius: 4px;
+      overflow: hidden;
+    }
+    .progress-fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, var(--neon), var(--magenta));
+      border-radius: 4px;
+      transition: width 0.6s ease;
+      box-shadow: 0 0 8px var(--neon);
+    }
+
+    /* ── Button ── */
+    #detoxBtn {
+      width: 100%;
+      padding: 14px;
+      background: transparent;
+      border: 1px solid var(--neon);
+      border-radius: 6px;
+      color: var(--neon);
+      font-family: 'Orbitron', sans-serif;
+      font-size: 0.78em;
+      font-weight: 700;
+      letter-spacing: 2px;
+      cursor: pointer;
+      transition: all 0.3s;
+      position: relative;
+      overflow: hidden;
+      margin-bottom: 16px;
+    }
+    #detoxBtn::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: var(--neon);
+      transform: scaleX(0);
+      transform-origin: left;
+      transition: transform 0.3s ease;
+      z-index: 0;
+    }
+    #detoxBtn:hover:not(:disabled)::before { transform: scaleX(1); }
+    #detoxBtn:hover:not(:disabled) { color: var(--bg); box-shadow: var(--glow); }
+    #detoxBtn span { position: relative; z-index: 1; }
+    #detoxBtn:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+      border-color: var(--dim);
+      color: var(--dim);
+    }
+    #detoxBtn.running {
+      border-color: var(--yellow);
+      color: var(--yellow);
+      animation: pulse-border 1.5s infinite;
+    }
+    @keyframes pulse-border {
+      0%,100% { box-shadow: 0 0 5px rgba(255,215,0,0.3); }
+      50%      { box-shadow: 0 0 20px rgba(255,215,0,0.7); }
+    }
+    #stopBtn {
+      width: 100%;
+      padding: 10px;
+      background: transparent;
+      border: 1px solid var(--red);
+      border-radius: 6px;
+      color: var(--red);
+      font-family: 'Space Mono', monospace;
+      font-size: 0.72em;
+      cursor: pointer;
+      transition: all 0.3s;
+      margin-bottom: 16px;
+      display: none;
+    }
+    #stopBtn:hover { background: rgba(255,68,85,0.15); box-shadow: 0 0 10px rgba(255,68,85,0.3); }
+    #stopBtn.visible { display: block; }
+
+    /* ── Log terminal ── */
+    .terminal-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+    .terminal-header span {
+      font-size: 0.65em;
+      color: var(--magenta);
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      text-shadow: 0 0 5px rgba(255,0,255,0.4);
+    }
+    .dot-row { display: flex; gap: 5px; }
+    .dot { width: 8px; height: 8px; border-radius: 50%; }
+    .dot.r { background: #ff5f57; }
+    .dot.y { background: #febc2e; }
+    .dot.g { background: #28c840; }
+
+    #logBox {
+      background: rgba(0,0,0,0.5);
+      border: 1px solid rgba(0,230,230,0.1);
+      border-radius: 6px;
+      padding: 12px;
+      min-height: 100px;
+      max-height: 140px;
+      overflow-y: auto;
+      font-size: 0.72em;
+      line-height: 1.6;
+      color: var(--dim);
+    }
+    #logBox::-webkit-scrollbar { width: 4px; }
+    #logBox::-webkit-scrollbar-track { background: transparent; }
+    #logBox::-webkit-scrollbar-thumb { background: var(--neon); border-radius: 2px; }
+
+    .log-line { display: flex; gap: 8px; margin-bottom: 2px; }
+    .log-time { color: rgba(0,230,230,0.3); flex-shrink: 0; }
+    .log-msg { }
+    .log-msg.success { color: var(--green); }
+    .log-msg.error   { color: var(--red); }
+    .log-msg.warn    { color: var(--yellow); }
+    .log-msg.info    { color: var(--neon); }
+  </style>
+</head>
+<body>
+<div class="wrapper">
+
+  <!-- Header -->
+  <div class="header">
+    <div class="logo-row">
+      <span class="logo-icon">🤖</span>
+      <h1>DETOXIFY</h1>
+    </div>
+    <div class="subtitle">AI Algorithm Harmonizer</div>
+    <div id="ytBadge" class="badge disconnected">
+      <div class="badge-dot"></div>
+      <span id="badgeText">Checking YouTube...</span>
+    </div>
+  </div>
+
+  <!-- Topic -->
+  <div class="field">
+    <label><span class="num">01</span> Topic Focus</label>
+    <input type="text" id="topicInput" value="Rust programming" placeholder="e.g., Machine Learning, Jazz Guitar"/>
+  </div>
+
+  <!-- Number of Videos -->
+  <div class="field">
+    <label><span class="num">02</span> Number of Videos</label>
+    <div class="row-inputs">
+      <input type="number" id="videoCount" value="5" min="1" max="20" placeholder="5"/>
+      <span class="input-hint">videos (max 20)</span>
+    </div>
+  </div>
+
+  <!-- Duration per video -->
+  <div class="field">
+    <label><span class="num">03</span> Watch Time Per Video</label>
+    <div class="row-inputs">
+      <input type="number" id="watchDuration" value="30" min="5" max="300" placeholder="30"/>
+      <span class="input-hint">seconds per video</span>
+    </div>
+    <div class="field-meta" id="totalCalc">Total session: ~2m 30s</div>
+  </div>
+
+  <!-- Progress -->
+  <div class="progress-wrap" id="progressWrap">
+    <div class="progress-label">
+      <span id="progressLabel">Initializing...</span>
+      <span id="progressPct">0%</span>
+    </div>
+    <div class="progress-track">
+      <div class="progress-fill" id="progressFill"></div>
+    </div>
+  </div>
+
+  <!-- Buttons -->
+  <button id="detoxBtn"><span>⚡ INITIATE DETOX</span></button>
+  <button id="stopBtn">■ ABORT SESSION</button>
+
+  <!-- Log Terminal -->
+  <div class="terminal-header">
+    <div class="dot-row">
+      <div class="dot r"></div>
+      <div class="dot y"></div>
+      <div class="dot g"></div>
+    </div>
+    <span>// Session Logs</span>
+  </div>
+  <div id="logBox">
+    <div class="log-line">
+      <span class="log-time">--:--:--</span>
+      <span class="log-msg">System initialized. Awaiting command...</span>
+    </div>
+  </div>
+
+</div>
+<script src="popup.js"></script>
+</body>
+</html>
